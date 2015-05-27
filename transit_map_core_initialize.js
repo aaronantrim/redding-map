@@ -53,6 +53,13 @@ toggle_stop_visibility();
 // when the zoom level changes, assess whether to show stops
 map.on('zoomend', toggle_stop_visibility);
 
+if (google_analytics) {
+map.on('zoomend', function() {
+	ga('send', 'event', 'map', 'zoomend', 'Zoom level', map.getZoom());
+});
+}
+
+
 add_base_tile_layer();
 
 </script>
