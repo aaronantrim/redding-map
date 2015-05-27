@@ -1,5 +1,5 @@
-<script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.2/mapbox.js'></script>
-<link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.2/mapbox.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.5/mapbox.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.5/mapbox.css' rel='stylesheet' />
 
 <script>
 
@@ -31,6 +31,51 @@ var route_colors = Array();
 var StopIcons = new Array();
 var gtfs_archive_base_url = 'http://gtfs-api.ed-groth.com/gtfs-api/';
 var active_layer;
+
+<?php
+
+
+// set up the variables from what was previously defined (transit_map_parameters.php)
+$agencies_list = implode($agency_id,",");
+$routes_list = implode($routes_array,",");
+
+// to eventually replace some of this PHP with Javascript use the following resource
+// http://stackoverflow.com/a/2880929
+
+if (isset($_GET['routes'])) {
+	$routes_initial = explode(",", $_GET['routes']);
+	$initial_route_bounds = explode(",", $_GET['routes']);
+
+
+	}
+else {
+	$routes_initial = $routes_array;
+	$initial_route_bounds = $default_routes_bounds;
+
+}
+
+
+for($i = 0; $i < count($routes_initial); ++$i) {
+    $routes_initial[$i] = intval($routes_initial[$i]);
+}
+
+
+?>
+
+var agency_id = Array( <?php echo $agencies_list; ?> );
+var route_ids_array = Array( <?php echo $routes_list; ?> );
+
+// set up array of routes
+var routes = load_data('json_routes.php?agency_id=' + encodeURIComponent(agency_id.join()),null,null,remote_base);
+
+// define which routes are active, based on variable passed to page
+
+<?php
+echo 'var routes_active = ['.implode(",", $routes_initial).'];
+';
+echo 'var initial_route_bounds = ['.implode(",", $initial_route_bounds).'];
+';
+?>
 
 // Set map bounds -- are in which map can be panned
 var point_A = L.latLng( bounds_point_A[0], bounds_point_A[1]),
@@ -165,6 +210,10 @@ function get_routes_array_index_from_id(id) {
 
     return index;
 
+}
+
+function get_route_info(id) {
+	return routes[get_routes_array_index_from_id(id)];
 }
 
 
@@ -306,7 +355,11 @@ function load_stop_markers() {
     stop_markers = [];
     stops_layer_group = L.layerGroup();
 
+   // console.log(routes_active);
 
+	//	/gtfs-api/stops/by-feed/sonomacounty-ca-us/route-id/1036
+
+    // json_stops_url = "json_stops.php?route_ids=" + encodeURI(routes_active.join(","));
 
 	var json_stops_url = gtfs_archive_base_url + 'stops/by-feed/' + gtfs_api_feed_name + '/route-id/' + routes_active.join(",");
 	console.log(json_stops_url);
@@ -339,6 +392,7 @@ function load_stop_markers() {
                 }).bindPopup(stops[i].stop_name, {maxWidth: 400});
                 console.log(LamMarker);
                 LamMarker.stop_id = stops[i].stop_id;
+                LamMarker.stop_name = stops[i].stop_name;
                 LamMarker.marker_id = i;
 
                 LamMarker.on('click', update_stop_info);
@@ -364,14 +418,39 @@ function load_stop_markers() {
 
 }
 
+function get_stop_info(stop_id_lookup) {
+	var result = null;
+		for(var i = 0; i < stops.length; i++) {
+			if( stops[i].stop_id == stop_id_lookup ) {
+				result = stops[i];
+				break;
+			}
+		}
+	return result;
+}
 
 function update_stop_info(e) {
     // console.log(e);
-    var stop_info_url = "stop_info.php?stop_id=" + e.target.stop_id;
-    // console.log(stop_info_url);
-    load_data_async(stop_info_url, 'html', remote_base, function(data){
-        e.target.setPopupContent(data);
-    });
+    
+    if (google_analytics) {ga('send', 'event', 'map', 'click stop', e.target.stop_name);}
+    
+    var stop_info = get_stop_info(e.target.stop_id);
+    
+    popup_content = '<h3 class="map_stop_name"><nobr>' + stop_info.stop_name + '</nobr></div>';
+
+	if (stop_info.stop_code != "") {popup_content += '<div style="font-size:11px;">Stop ID: ' + stop_info.stop_code + '</div>';}
+
+	popup_content += '<h4>Routes that serve this stop:</h4><ul>';
+
+for (var i = 0, len = stop_info.routes.length; i < len; ++i) {
+	var route_info = get_route_info(stop_info.routes[i].route_id);
+	popup_content += '<li><a href="'+route_info.route_url+'">'+route_info.route_short_name+' - '+ route_info.route_long_name +'</a></li>';	
+}
+
+popup_content += '</ul>'
+
+e.target.setPopupContent(popup_content);
+
 }
 
 
@@ -386,7 +465,6 @@ function toggle_stop_visibility() {
 
 
 // these are the functions to show / hide the routes
-
 function activate_all_routes() {
 
     for (var i = 0, len = route_ids_array.length; i < len; ++i) {
@@ -412,6 +490,7 @@ function deactivate_all_routes(keep_route_ids) {
 	console.log('route_ids_to_deactivate '+route_ids_to_deactivate);
 
 	for (var i = 0, len = keep_route_ids.length; i < len; i++) {
+		console.log('remove_from_array route_ids_to_deactivate '+keep_route_ids[i]);
 		remove_from_array(keep_route_ids[i], route_ids_to_deactivate);
 	}
 
@@ -445,52 +524,6 @@ function toggle_route(routeNum) {
 }
 
 
-<?php
-
-
-// set up the variables from what was previously defined (transit_map_parameters.php)
-$agencies_list = implode($agency_id,",");
-$routes_list = implode($routes_array,",");
-
-// to eventually replace some of this PHP with Javascript use the following resource
-// http://stackoverflow.com/a/2880929
-
-if (isset($_GET['routes'])) {
-	$routes_initial = explode(",", $_GET['routes']);
-	$initial_route_bounds = explode(",", $_GET['routes']);
-
-
-	}
-else {
-	$routes_initial = $routes_array;
-	$initial_route_bounds = $default_routes_bounds;
-
-}
-
-
-for($i = 0; $i < count($routes_initial); ++$i) {
-    $routes_initial[$i] = intval($routes_initial[$i]);
-}
-
-
-?>
-
-var agency_id = [<?php echo $agencies_list; ?>];
-var route_ids_array = [<?php echo $routes_list; ?>];
-
-// set up array of routes
-console.log('GTFS API URL: json_routes.php?agency_id=' + encodeURIComponent(agency_id.join()));
-var routes = load_data('json_routes.php?agency_id=' + encodeURIComponent(agency_id.join()),null,null,remote_base);
-console.log('the var routes was set.');
-
-// define which routes are active, based on variable passed to page
-
-<?php
-echo 'var routes_active = ['.implode(",", $routes_initial).'];
-';
-echo 'var initial_route_bounds = ['.implode(",", $initial_route_bounds).'];
-';
-?>
 
 function stop_icons() {
 StopIcons[default_icon_color] = new StopIcon({iconUrl:"create_image.php?r=10&bc="+default_icon_color});
