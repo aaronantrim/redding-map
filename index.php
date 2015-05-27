@@ -66,6 +66,23 @@
 			width: 30px;
 			margin: 0 10px 0 0;
 		}
+		
+		.numberCircle {
+			border-radius: 50%;
+			/* behavior: url(PIE.htc); */ /* remove if you don't care about IE8 */
+
+			width: 24px;
+			height: 24px;
+			padding: 5px;
+	
+			/* background: #fff; */
+			/* border: 2px solid #666; */
+			/* color: #666; */
+			text-align: center;
+	
+			font: 20px Arial, sans-serif;
+			font-weight:bold;
+		}
 
     </style>
 
@@ -87,7 +104,8 @@
 		<h1 class='services'>Routes</h1>
 		<div id='select_all_routes' class='select-all-button' >Show All Routes</div>
 		<div id='deselect_all_routes' class='select-all-button'>Hide All Routes</div>
-		<div class='instructions instructions-first'>Scroll to see all routes<br/>Click a numbered circle to zoom in on that route.</div>
+		<div class='instructions instructions-first'>Scroll to see all routes<br/>Click a numbered circle to zoom in on that route.
+		<br/>Routes operate Monday through Saturday unless noted otherwise.</div>
 <!-- 		<div class='instructions'>Click a magnifying glass to zoom in on that route. <span class="search-icon"></span></div> -->
 	</div>
 
@@ -136,21 +154,25 @@ function toggle_landmark_layer(layer_id) {
 /* Note: I need to add back in route_ids for some of the connected routes */
 //agency_id	route_id(array)	Days of Service	Quadrant	Shortname	longname	color	text-color	URL	route_id
 		$routeInfo =
-"25;151;Monday - Saturday;;1;;d20055;ffffff;http://www.rabaride.com/routes/1.html;151
-25;1886;Monday - Saturday;;2W;;;;;1886
-25;1887;Monday - Saturday;;2E;;;;;1887
-25;152;Monday - Saturday;;2;;ffaa00;000000;http://www.rabaride.com/routes/2.html;152
-25;153;Monday - Saturday;;3;;0096ce;ffffff;http://www.rabaride.com/routes/3.html;153
-25;155;Monday - Saturday;;5;;1ad1ff;000000;http://www.rabaride.com/routes/5.html;155
-25;156;Monday - Saturday;;6;;fe001a;ffffff;http://www.rabaride.com/routes/6.html;156
-25;157;Monday - Saturday;;7;;fbff02;000000;http://www.rabaride.com/routes/7.html;157
-25;158;Monday - Saturday;;9;;1f18b1;ffffff;http://www.rabaride.com/routes/9.html;158
-25;159;Monday - Saturday;;11;;00948d;ffffff;http://www.rabaride.com/routes/11.html;159
-25;160;Monday - Saturday;;14;;03bf75;ffffff;http://www.rabaride.com/routes/14.html;160
-25;161;Monday - Friday;;;Burney Express;ff0000;ffffff;http://www.rabaride.com/routes/burneyexpress.html;161
-25;154;Monday - Saturday;;4;;00519e;ffffff;http://www.rabaride.com/routes/4.html;154
-25;1093;Monday - Saturday;;;Airport Express;000000;ffffff;http://www.rabaride.com/routes/airportexpress.html;1093
-25;1885;Monday - Friday;;;School Express;;;;1885";
+"25;151;;;1;;d20055;ffffff;http://www.rabaride.com/routes/1.html;151
+25;[1886,1887];;;2;;ffaa00;ffffff;http://www.rabaride.com/routes/2.html;1886
+25;153;;;3;;0096ce;ffffff;http://www.rabaride.com/routes/3.html;153
+25;154;;;4;;00519e;ffffff;http://www.rabaride.com/routes/4.html;154
+25;155;;;5;;1ad1ff;ffffff;http://www.rabaride.com/routes/5.html;155
+25;[1888,1889];;;6;;fe001a;ffffff;http://www.rabaride.com/routes/6.html;1888
+25;157;;;7;;fbff02;000000;http://www.rabaride.com/routes/7.html;157
+25;158;;;9;;1f18b1;ffffff;http://www.rabaride.com/routes/9.html;158
+25;159;;;11;;00948d;ffffff;http://www.rabaride.com/routes/11.html;159
+25;160;;;14;;03bf75;ffffff;http://www.rabaride.com/routes/14.html;160
+25;1093;;;;Airport Express;000000;ffffff;http://www.rabaride.com/routes/airportexpress.html;1093
+25;1885;Monday - Friday;;;School Express;;;;1885
+25;161;Monday - Friday;;;Burney Express;ff0000;ffffff;http://www.rabaride.com/routes/burneyexpress.html;161";
+
+
+// 175;[1029,1051];Monday - Sunday;East;30;Santa Rosa, Sonoma Valley;7238;ffffff;http://www.sctransit.com/maps-schedules/route-30/;1051
+
+// http://jsfiddle.net/thirtydot/dQR9T/2637/
+// http://css3pie.com
 
 // this text can be generated from the routes xls file, exporting as tab separated list then find replace tabs with semicolons.
 // https://docs.google.com/spreadsheet/ccc?key=0ArkC-1z7T8ujdFl0dFU2YTJ6aTR2azNERVROWWU4Y2c&usp=drive_web#gid=0
@@ -210,7 +232,7 @@ function toggle_landmark_layer(layer_id) {
 				
 				?>
 				<div class="fancy-route-row <?php echo $selected ?> " style="display:block;" rel="<?php echo $routeLine[1]; ?>" onmouseover="highlight_route_alignment(<?php echo $routeLine[1]; ?>)" onmouseout="unhighlight_route_alignment(<?php echo $routeLine[1]; ?>)" onclick="focus_routes(<?php echo $routeLine[1]; ?>);load_stop_markers();remove_route_activation_highlight();activate_route_highlight(this );">
-				<div style="width:28px;font-size:18px;font-weight:bold;background-color:#<?php echo $routeLine[6]; ?>;color:#<?php echo $routeLine[7]; ?>" class="route-icon"><?php echo $routeLine[4]; ?></div>
+				<div class="numberCircle" style="background-color:#<?php echo $routeLine[6]; ?>;color:#<?php echo $routeLine[7]; ?>" class="route-icon"><?php echo $routeLine[4]; ?></div>
 				<div class="title" style="margin-top:0px;">
 					<?php if ($routeLine[5] != '') { ?><span class="text"><?php echo $routeLine[5]; ?></span>
 					<br /><?php }?>

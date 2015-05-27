@@ -29,7 +29,7 @@ var stops = Array();
 var ZoomLevelThreshhold = 12;
 var route_colors = Array();
 var StopIcons = new Array();
-var gtfs_archive_base_url = 'http://archive.oregon-gtfs.com/gtfs-api/';
+var gtfs_archive_base_url = 'http://gtfs-api.ed-groth.com/gtfs-api/';
 var active_layer;
 
 // Set map bounds -- are in which map can be panned
@@ -306,11 +306,7 @@ function load_stop_markers() {
     stop_markers = [];
     stops_layer_group = L.layerGroup();
 
-   // console.log(routes_active);
 
-	//	/gtfs-api/stops/by-feed/sonomacounty-ca-us/route-id/1036
-
-    // json_stops_url = "json_stops.php?route_ids=" + encodeURI(routes_active.join(","));
 
 	var json_stops_url = gtfs_archive_base_url + 'stops/by-feed/' + gtfs_api_feed_name + '/route-id/' + routes_active.join(",");
 	console.log(json_stops_url);
@@ -369,7 +365,6 @@ function load_stop_markers() {
 }
 
 
-
 function update_stop_info(e) {
     // console.log(e);
     var stop_info_url = "stop_info.php?stop_id=" + e.target.stop_id;
@@ -417,7 +412,6 @@ function deactivate_all_routes(keep_route_ids) {
 	console.log('route_ids_to_deactivate '+route_ids_to_deactivate);
 
 	for (var i = 0, len = keep_route_ids.length; i < len; i++) {
-		console.log('remove_from_array route_ids_to_deactivate '+keep_route_ids[i]);
 		remove_from_array(keep_route_ids[i], route_ids_to_deactivate);
 	}
 
