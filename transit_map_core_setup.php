@@ -62,8 +62,8 @@ for($i = 0; $i < count($routes_initial); ++$i) {
 
 ?>
 
-var agency_id = Array( <?php echo $agencies_list; ?> );
-var route_ids_array = Array( <?php echo $routes_list; ?> );
+var agency_id = [<?php echo $agencies_list; ?>];
+var route_ids_array = [<?php echo $routes_list; ?>];
 
 // set up array of routes
 var routes = load_data('json_routes.php?agency_id=' + encodeURIComponent(agency_id.join()),null,null,remote_base);
